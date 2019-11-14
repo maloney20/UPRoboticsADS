@@ -11,7 +11,16 @@ git clone https://github.com/maloney20/UPRoboticsADS.git
 ```
 
 ## Running
-I've written a basic start script to interface with the simulator via a python script. The commands are "go", "stop", "turn_r", "turn_l". Commands are not case sensitive.
+I've written a basic start script to interface with the simulator via a python script. The commands are "go", "stop", "turn_r", "turn_l". Commands are not case sensitive. 
+To run the script:
+```
+$ ./start.sh
+```
+Then enter a command listed above at the prompt.
+```
+command: go
+```
+Press enter and watch the robot go!
 
 ## Author
 * **Patrick Maloney**
