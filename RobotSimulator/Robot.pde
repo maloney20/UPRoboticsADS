@@ -23,10 +23,12 @@ class Robot {
 
   void gatherPoints() {
     points.clear();
-    for (float i = angle+HALF_PI; i < HALF_PI+TWO_PI+angle; i+= TWO_PI/200) {
+    float zerodistance = myLidar.getDistance(x+(100*cos(angle)), y+(100*sin(angle)), angle);
+    points.put(0.0, zerodistance);
+    for (float i = angle; i < TWO_PI+angle; i+= TWO_PI/100) {
       float distance = myLidar.getDistance(x+(100*cos(angle)), y+(100*sin(angle)), i);
       if (distance > 0) {
-        points.put(i, distance);
+        points.put(i-angle, distance);
       }
     }
   }
@@ -36,6 +38,7 @@ class Robot {
     x+=xVel;
     y+=yVel;
     angle+=angleVel;
+    
   }
 
   void show() {
@@ -59,8 +62,9 @@ class Robot {
     pushMatrix();
     translate(x+100*cos(angle), y+100*sin(angle));
     stroke(0, 255, 0);
+    strokeWeight(0.3);
     for (float x : points.keySet()) {
-      line(0, 0, cos(x)*points.get(x), sin(x)*points.get(x));
+      line(0, 0, cos(x+angle)*points.get(x), sin(x+angle)*points.get(x));
     }
     popMatrix();
   }
@@ -70,8 +74,11 @@ class Robot {
     translate(x+cos(angle)*100, y+100*sin(angle));
     stroke(0, 255, 0);
     for (float x : points.keySet()) {
-      ellipse(cos(x)*points.get(x), sin(x)*points.get(x), 5, 5);
+      ellipse(cos(x+angle)*points.get(x), sin(x+angle)*points.get(x), 5, 5);
+      
     }
+    fill(255, 0, 0);
+    ellipse(cos(angle)*points.get(0.0), sin(angle)*points.get(0.0), 5, 5);
     popMatrix();
   }
 

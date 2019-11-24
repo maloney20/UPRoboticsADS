@@ -1,16 +1,16 @@
 import java.net.Socket;
-import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import processing.net.*;
 
 Socket sock;
-Client client;
+Client client = new Client(this, "127.0.0.1", 12345);
 String command;
 
 Robot robot;
 Obstacle[] obstacles;
 Lidar canonicalLidar;
-ObjectOutputStream objStream;
+PrintWriter out;
 
 void setup() {
   size(1080, 720);
@@ -18,7 +18,7 @@ void setup() {
   try {
     sock = new Socket("127.0.0.1", 9001);
     client = new Client(this, sock);
-    objStream = new ObjectOutputStream(sock.getOutputStream());
+    out = new PrintWriter(sock.getOutputStream());
   } 
   catch(IOException e) {
   }
@@ -28,7 +28,7 @@ void setup() {
     obstacles[i] = new Obstacle(random(50, width-50), random(50, height-50), random(25, 100));
   }
   canonicalLidar = new Lidar(obstacles);
-  robot = new Robot(random(50, width-50), random(50, height-50), random(2*PI), canonicalLidar);
+  robot = new Robot(200, random(50, height-50), random(2*PI), canonicalLidar);
 }
 
 void draw() {
@@ -40,14 +40,31 @@ void draw() {
   robot.show();
   if (client.available() > 0) {
     command = client.readString();
-    robot.acceptCommand(command);
+    String[] commands = command.split("&");
+    for(int i = 0; i < commands.length; i++){
+      println(commands[i]);
+      robot.acceptCommand(commands[i]); 
+    }
   }
   try {
-    objStream.writeObject(robot.points);
+    sendLidarData();
   } 
-  catch (IOException e) {
+  catch (Exception e) {
     //println("could not sent lidar datapoints to controller");
   }
+}
+
+void sendLidarData() throws IOException {
+  String jsonBuilder = "{\n";
+  for(Float ang : robot.points.keySet()){
+    String entry = "\t \"" + ang + "\" : " + robot.points.get(ang)+",\n";
+    //println(entry);
+        jsonBuilder += entry;
+      }
+      String jsonString = jsonBuilder.substring(0, jsonBuilder.length()-2)+"\n}";
+      //println("sending "+jsonString);
+      out.print(jsonString);
+      out.flush(); 
 }
 
 void keyPressed() {
